@@ -1,0 +1,18 @@
+/* table-header.css */
+.table-header .p-iconfield,
+.table-header .p-inputtext {
+  width: 100%;
+}
+
+.table-header .p-multiselect {
+  min-width: 12rem;
+}
+
+@media (min-width: 640px) {
+  .table-header .p-multiselect {
+    width: 16rem;
+  }
+}
+
+/* Optional: tighter dialog padding if needed */
+/* .p-dialog .p-dialog-content { padding: 1rem; } */
