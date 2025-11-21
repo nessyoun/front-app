@@ -3,14 +3,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
 import { TreeNode } from "primereact/treenode";
-import { COLUMNS } from "./consts";
 import { MultiSelectChangeEvent } from "primereact/multiselect";
+import { useRouter } from "next/navigation";
+
+import { COLUMNS } from "./consts";
 import { renderColumn } from "../utils/functions";
 import { actionTemplate } from "./components/actionTemplate";
-import { useRouter } from "next/navigation";
 import { createUser, deleteUser, fetchUsers } from "../utils/service";
 import { mapToUserApp } from "../utils/mapperUsersToTreeNode";
-import TableHeader from "./components/header/header";
+import TableHeader, { type ColumnMeta } from "./components/header/header";
 import { DeleteDialog } from "./components/DeleteDialog";
 import UserDialog, { Form } from "./components/userDialog";
 
@@ -18,13 +19,15 @@ export default function BasicDemo() {
   const router = useRouter();
 
   const [nodes, setNodes] = useState<TreeNode[]>([]);
-  const [visibleColumns, setVisibleColumns] = useState<ColumnMeta>([] as ColumnMeta[]);
+  const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>([]);
   const [selectedUser, setSelectedUser] = useState<TreeNode | null>(null);
   const [userData, setUserData] = useState<TreeNode | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [globalFilterValue, setGlobalFilterValue] = useState<string>("");
 
   const emptyForm: Form = {
     matricule: "",
@@ -59,7 +62,9 @@ export default function BasicDemo() {
       phone: d.phone ?? "",
       retired: !!d.retired,
       retirementYear:
-        typeof d.yearOfRetirement === "number" ? d.yearOfRetirement : d.yearOfRetirement ?? "",
+        typeof d.yearOfRetirement === "number"
+          ? String(d.yearOfRetirement)
+          : d.yearOfRetirement ?? "",
       gender: !!d.genre,
       birthDate: d.birthDate ? new Date(d.birthDate) : null,
       hiringDate: d.haringDate ? new Date(d.haringDate) : null,
@@ -69,7 +74,9 @@ export default function BasicDemo() {
       email: d.email ?? "",
       children: Array.isArray(d.children) ? d.children : node.children ?? [],
       roles: Array.isArray(d.roles)
-        ? d.roles.map((r: any) => (typeof r === "string" ? r : r?.id)).filter(Boolean)
+        ? d.roles
+            .map((r: any) => (typeof r === "string" ? r : r?.id))
+            .filter(Boolean)
         : [],
     };
   };
@@ -88,6 +95,7 @@ export default function BasicDemo() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
+
     const node: TreeNode = {
       key: userData?.key ?? undefined,
       data: {
@@ -98,7 +106,8 @@ export default function BasicDemo() {
         activated: form.activated,
         phone: form.phone,
         retired: form.retired,
-        yearOfRetirement: form.retirementYear === "" ? 0 : Number(form.retirementYear),
+        yearOfRetirement:
+          form.retirementYear === "" ? 0 : Number(form.retirementYear),
         genre: form.gender,
         birthDate: form.birthDate,
         haringDate: form.hiringDate,
@@ -125,7 +134,7 @@ export default function BasicDemo() {
   };
 
   const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumns = event.value;
+    const selectedColumns = event.value as ColumnMeta[];
     const orderedSelectedColumns = COLUMNS.filter((col) =>
       selectedColumns.some((sCol) => sCol.field === col.field)
     );
@@ -134,8 +143,15 @@ export default function BasicDemo() {
 
   useEffect(() => {
     const user = localStorage.getItem("user");
-    if (!user) router.push("/not-allowed");
-    fetchUsers().then(setNodes);
+    if (!user) {
+      router.push("/not-allowed");
+      return;
+    }
+    fetchUsers().then((res) => {
+      setNodes(res);
+      // initialize visibleColumns (optional – show all by default)
+      setVisibleColumns(COLUMNS);
+    });
   }, [router]);
 
   const openAddUser = () => {
@@ -148,10 +164,12 @@ export default function BasicDemo() {
     <TableHeader
       visibleColumns={visibleColumns}
       COLUMNS={COLUMNS}
-      onAddUser={openAddUser}
       onColumnToggle={onColumnToggle}
       users={nodes.map((u) => mapToUserApp(u))}
       onImport={() => fileInputRef.current?.click()}
+      onAddUser={openAddUser}
+      globalFilterValue={globalFilterValue}
+      onGlobalFilterChange={(e) => setGlobalFilterValue(e.target.value)}
     />
   );
 
@@ -167,12 +185,16 @@ export default function BasicDemo() {
         paginator
         rows={5}
         rowsPerPageOptions={[5, 10, 25]}
+        globalFilter={globalFilterValue}
+        filterMode="lenient"
       >
         <Column field="matricule" header="Matricule" expander />
-        <Column field="firstName" header="Prénom" sortable />
-        <Column field="lastName" header="Nom" sortable />
-        <Column field="score" header="Score" sortable />
-        {visibleColumns.map((col: ColumnMeta) => renderColumn(col))}
+        <Column field="firstName" header="Prénom" sortable  />
+        <Column field="lastName" header="Nom" sortable  />
+        <Column field="score" header="Score" sortable/>
+        {visibleColumns.map((col: ColumnMeta) =>
+          renderColumn({ ...col, filter: true }) // ensure these are filterable too
+        )}
         <Column
           header="Actions"
           body={(rowData) =>
@@ -184,7 +206,7 @@ export default function BasicDemo() {
               },
               () => {
                 setUserData(rowData);
-                setForm(toForm(rowData)); // prefill
+                setForm(toForm(rowData));
                 setShowEditDialog(true);
               }
             )

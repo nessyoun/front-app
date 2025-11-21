@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { Button } from 'primereact/button';
+import {ActivityTemplate} from './components/ActivityTemplate';
 
 export default function Reservation() {
     const stepperRef = useRef(null);
@@ -11,9 +12,11 @@ export default function Reservation() {
     return (
         <div className="card">
             <Stepper ref={stepperRef} style={{ flexBasis: '50rem' }} orientation="vertical">
-                <StepperPanel header="Choisir une activité" style={{backgroundColor:"bg-green-500"}}>
+                <StepperPanel header="Choisir une activité">
                     <div className="flex flex-column h-12rem">
-                        <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content I</div>
+                        <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                            <ActivityTemplate></ActivityTemplate>
+                        </div>
                     </div>
                     <div className="flex py-4">
                         <Button severity="success" label="Next" icon="pi pi-arrow-right" iconPos="right" onClick={() => stepperRef.current.nextCallback()} />

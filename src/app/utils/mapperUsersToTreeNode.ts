@@ -11,6 +11,7 @@ export const mapToUserApp = (node:TreeNode):UserApp=>{
 
 const compressChildren = (node:TreeNode)=>
 {
+    if(node?.children?.at(0)?.data)
     return node?.children?.map((child) => ({
         matricule:child.data.matricule,
         firstName:child.data.firstName,
@@ -19,6 +20,7 @@ const compressChildren = (node:TreeNode)=>
         score:child.data.score,
         genre:child.data.genre,
       }));
+      return node?.children;
 }
 
 export const mapToTreeNode = (user:UserApp,key_in:string)=>

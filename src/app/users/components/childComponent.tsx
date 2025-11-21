@@ -1,25 +1,23 @@
+import React from "react";
 import { Calendar } from "primereact/calendar";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import { Button } from "primereact/button";
 
 type Props = {
-  child: any; // keep your Child type if you have it
+  child: any;         // keep your Child type if you have it
   parentMat: string;
   onChange: (next: any) => void;
   onRemove?: () => void;
 };
 
 export default function ChildForm({ child, parentMat, onChange, onRemove }: Props) {
-  // ensure data exists
-  const data = child.data ?? {};
+  // read directly from top-level
+  const data = child ?? {};
 
-  // update helper for nested data
-  const setData = <K extends keyof typeof data>(key: K, value: (typeof data)[K]) =>
-    onChange({
-      ...child,
-      data: { ...data, [key]: value },
-    });
+  // write to top-level (not child.data)
+  const setData = (key: string, value: any) =>
+    onChange({ ...(child ?? {}), [key]: value });
 
   // Calendar expects Date | null for display
   const birthDateValue: Date | null =
@@ -29,7 +27,7 @@ export default function ChildForm({ child, parentMat, onChange, onRemove }: Prop
         : new Date(data.birthDate as string)
       : null;
 
-  // save date as ISO yyyy-MM-dd (good for Java LocalDate)
+  // store date as ISO yyyy-MM-dd
   const toISODate = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : null);
 
   return (
@@ -86,12 +84,13 @@ export default function ChildForm({ child, parentMat, onChange, onRemove }: Prop
       <div className="flex items-center gap-2">
         <label htmlFor="gender">Gender:</label>
         <ToggleButton
+          id="gender"
           onIcon="pi pi-mars"
           offIcon="pi pi-venus"
           offLabel="Female"
           onLabel="Male"
-          checked={!!data.genre}
-          onChange={(e) => setData("genre", !!e.value)}
+          checked={!!data.genre}                       
+          onChange={(e) => setData("genre", e.value as boolean)}
           className="w-10rem"
         />
       </div>
@@ -101,7 +100,7 @@ export default function ChildForm({ child, parentMat, onChange, onRemove }: Prop
           type="button"
           icon="pi pi-trash"
           label="Remove"
-          severity="success"
+          severity="danger"
           onClick={onRemove}
         />
       )}
