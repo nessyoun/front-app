@@ -8,9 +8,10 @@ import { Chips } from "primereact/chips";
 import { MultiSelect } from "primereact/multiselect";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
+import { Activity } from "@/app/entities/activity.entity";
+import { ActivityType } from "@/app/entities/activity-type.entity";
 
-import { Activity } from "./activity.entity"; // adjust path if needed
-import { ActivityType } from "./activity-type.entity";
+
 
 // We ignore: author, createdAt, updatedAt, views, reservation
 // activityType -> MultiSelect, status -> Dropdown, collabortorsType -> MultiSelect

@@ -96,13 +96,6 @@ export default function RoleManagement() {
           }
         />
       </DataTable>
-      <DeleteDialog
-        onConfirm={() => handleDelete(selectedNode)}
-        onHide={() => {
-          setShowDeleteDialog(false);
-        }}
-        visible={showDeleteDialog}
-      />
       <AddActivityForm
         handleSubmit={handleSubmit}
         visible={showEditDialog}

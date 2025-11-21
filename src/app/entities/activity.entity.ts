@@ -7,7 +7,7 @@ export interface Activity
     id:number;//
     title:string;//
     images: string[] ;//
-    content: String ;//
+    content: string ;//
     author: UserApp ;
     createdAt:Date;//
     updatedAt:Date;//
